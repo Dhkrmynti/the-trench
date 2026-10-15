@@ -2,16 +2,15 @@
 
 <!-- impeccable:product-schema 1 -->
 
-## Rebrand in progress (2026-10-14): Lava Pit ($LAVA)
+## Rebrand in progress (2026-10-15): The Trench ($SINK)
 
-The public site was redrawn as **Lava Pit ($LAVA)**, a 2D pixel mine cut open from the side (block-game feel, but no Minecraft names, characters, logos or textures). Engine, API, tokenomics and `/memex` are unchanged.
+The public site was redrawn as **The Trench ($SINK)**: one dive from the sunlit surface to the floor of the Mariana Trench (Challenger Deep, 10,935 m). Engine, API, tokenomics, thresholds and `/memex` logic are unchanged; only UI and lore copy changed. Replaces Lava Pit ($LAVA, Brr the penguin), which replaced Black Void.
 
-- Mascot: **Brr**, a penguin miner (yellow hard hat, head lamp, always sweating) who slid off his iceberg into the lava mine; he is the bot. (Replaced Cobble the cobblestone on 2026-10-14 at the user's request.)
-- The lava pit (real pixel fire) is 0x…dEaD. Odd runs (0.01 ETH): buy $LAVA, drop it in the lava. Even runs (0.02 ETH): fees go in **the chest** (project wallet).
-- Fee escrow = the segmented bar ("ETH ore"). Burn log = "the lava log".
-- Fonts: Pixelify Sans (display), Silkscreen (labels, caps only: never use it for addresses), Space Grotesk (body), JetBrains Mono (addresses, numbers).
-- Not live yet: no domain, no X, no CA. $LAVA needs a new Pons launch; the on-chain name/ticker of the current token cannot change.
-- The Black Void sections below are the previous brand.
+- Mascot and bot: **Otto**, an octopus who pilots an old bathysphere. Drawn as a geometric SVG (`src/components/trench/Otto.tsx`); a hand-drawn illustration can replace it later in the same slots.
+- Fee escrow → **the net**; threshold → **net full**; claim → **the haul**; buyback → Otto **buys $SINK**; burn → **sinks to the bottom**; 0x…dEaD → **the bottom** (10,935 m); cycles → **dives** (odd: sink, 0.01 ETH; even: **the hold**, 0.02 ETH, the project wallet, always shown openly); burn log → **the sinking log**.
+- Tagline: "Let it sink."
+- Not live yet: no domain, no X, no CA. $SINK needs a new Pons launch; the on-chain name/ticker of the current token cannot change. The X content kit in `konten-x/` is still Lava Pit.
+- Everything below about VOID is older brand history.
 
 ## Platform
 

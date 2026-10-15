@@ -79,7 +79,7 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
               time: timeOnly,
               type: "burn",
               tag: "BURN",
-              message: `Permanently burned ${new Intl.NumberFormat("en-US").format(Math.round(burnedTokens || 250000))} $VOID past the event horizon (0x000...dEaD)`,
+              message: `Permanently burned ${new Intl.NumberFormat("en-US").format(Math.round(burnedTokens || 250000))} $SINK to the bottom (0x000...dEaD)`,
               txHash: entry.burnTx || entry.claimTx || "",
             });
           }
@@ -194,18 +194,18 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
   };
 
   const TAG_LABELS: Record<NormalizedLogItem["type"], string> = {
-    burn: "fell in",
-    buyback: "feed",
-    claim: "pull",
+    burn: "sunk",
+    buyback: "buy",
+    claim: "haul",
     trigger: "trade",
-    system: "watch",
+    system: "otto",
   };
 
   const FILTER_LABELS: Record<typeof selectedFilter, string> = {
     all: "all",
-    burn: "falls",
-    buyback: "feeds",
-    claim: "pulls",
+    burn: "sinks",
+    buyback: "buys",
+    claim: "hauls",
   };
 
   return (
@@ -213,7 +213,7 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
       {isOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <motion.div
-            className="absolute inset-0 bg-[#06080fd9]"
+            className="absolute inset-0 bg-[#040f1bd9]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -235,7 +235,7 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
                         <div className="flex items-start justify-between gap-4 px-5 pb-5 pt-6 sm:px-7">
               <div>
                 <h3 id="burn-log-title" className="m-0 display text-[2.8rem] text-pen">
-                  The Observing Log
+                  The Sinking Log
                 </h3>
                 <p className="m-0 mt-2 text-[0.98rem] text-pen-soft">
                   Live from Robinhood Chain · {filteredLogs.length} {filteredLogs.length === 1 ? "entry" : "entries"}
@@ -280,7 +280,7 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="search tx"
                     aria-label="Search the log"
-                    className="w-full rounded-full border border-pen/30 bg-[#f8f4ea] py-1.5 pl-8 pr-3 font-mono text-[0.82rem] text-pen placeholder:text-pen-soft focus:border-pen focus:outline-none"
+                    className="w-full rounded-full border border-pen/30 bg-[#f6fcfa] py-1.5 pl-8 pr-3 font-mono text-[0.82rem] text-pen placeholder:text-pen-soft focus:border-pen focus:outline-none"
                   />
                 </div>
                 <button
@@ -303,7 +303,7 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
                 </li>
               ) : (
                 filteredLogs.map((item) => (
-                  <li key={item.id} className="border-b border-pen/15 px-5 py-3.5 transition-colors hover:bg-[#e6dfcb]/70 sm:px-7">
+                  <li key={item.id} className="border-b border-pen/15 px-5 py-3.5 transition-colors hover:bg-[#d2ebe4]/70 sm:px-7">
                     <div className="flex items-center justify-between gap-3">
                       <span className={`rounded-full px-2.5 py-0.5 display text-[0.85rem] ${getTagColor(item.type)}`}>
                         {TAG_LABELS[item.type]}
@@ -329,7 +329,7 @@ export const BurnLedgerDrawer: React.FC<BurnLedgerDrawerProps> = ({
 
             {/* Footer */}
             <div className="flex items-center justify-between gap-3 border-t border-pen/25 bg-paper/85 px-5 py-4 text-[0.85rem] text-pen-soft sm:px-7">
-              <span className="truncate font-mono">Event horizon · 0x000...dEaD</span>
+              <span className="truncate font-mono">The bottom · 0x000...dEaD</span>
               <button type="button" onClick={onClose} className="btn-pen cursor-pointer bg-paper px-4 py-1.5 text-[0.95rem]">
                 close
               </button>

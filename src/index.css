@@ -2,62 +2,71 @@
 @import "./fonts.css";
 
 /*
-  LAVA PIT: the bottom of a pixel mine. Cave stone, a grass line far above, a lava pit
-  that really burns, and Brr, a penguin miner, working the ledge. Square corners, stepped motion.
+  THE TRENCH: one dive, from the sunlit surface to the floor of the Challenger Deep.
+  The colour field is the real ocean zones; international-orange survey buoys mark
+  what is live or clickable; kelp marks the hold. Pills for controls, circles for
+  instruments, a 20px hull radius for panels.
 */
 @theme {
-  /* the cave */
-  --color-night: #15110e;
-  --color-night-2: #1d1714;
-  --color-panel: #2a221d;
-  --color-panel-line: #3e332b;
-  --color-star: #f4ecdc;
-  --color-star-dim: #b5a896;
-  /* signs and paper (full log drawer) */
-  --color-paper: #efe6d4;
-  --color-paper-shade: #ddd1ba;
-  --color-grid: #c47f1c;
-  --color-pen: #2a1d14;
-  --color-pen-soft: #6b5a48;
-  --color-marker: #d9420f;
-  --color-marker-deep: #8f2108;
-  /* lava: live and actionable only */
-  --color-ring: #ff8a1f;
-  --color-ring-hot: #ffe066;
-  /* the chest: the keep runs, ETH ore blue */
-  --color-fuel: #7fdcf0;
-  --color-fuel-ink: #1f6f86;
-  /* the surface */
-  --color-grass: #5fa83b;
-  --color-dirt: #6b4a2f;
+  /* the ocean, top to bottom */
+  --color-air: #e4f6f2;
+  --color-surf: #8fe0dc;
+  --color-shallow: #3aa9b9;
+  --color-twilight: #0f5a78;
+  --color-midnight: #082b44;
+  --color-abyss: #05182a;
+  --color-night: #040f1b;
+  --color-night-2: #071c2c;
+  /* hulls and lines in the deep */
+  --color-panel: #0a2537;
+  --color-panel-line: #1f4a60;
+  /* text on deep water */
+  --color-star: #e6f4f1;
+  --color-star-dim: #9dbdc1;
+  /* the survey sheet (full log drawer) and text on light water */
+  --color-paper: #eaf6f2;
+  --color-paper-shade: #d2ebe4;
+  --color-grid: #7fb9b4;
+  --color-pen: #052733;
+  --color-pen-soft: #36606b;
+  /* the buoy: live and actionable only */
+  --color-ring: #ff6a3d;
+  --color-ring-hot: #ff9a72;
+  --color-marker: #c9441c;
+  --color-marker-deep: #93300f;
+  /* the hold: the keep dives */
+  --color-fuel: #c8e66a;
+  --color-fuel-ink: #4a6610;
+  /* the floor */
+  --color-silt: #22343a;
 
   /* legacy names used by the operator panel, remapped into this world */
-  --color-soot: #15110e;
-  --color-char: #1d1714;
-  --color-wood: #2a221d;
-  --color-bark: #3e332b;
-  --color-ember: #ff8a1f;
-  --color-flame: #ff8a1f;
-  --color-hot: #efe6d4;
-  --color-ash: #b5a896;
-  --color-ash-light: #f4ecdc;
-  --color-plaque: #efe6d4;
-  --color-plaque-ink: #2a1d14;
-  --color-cold: #7fdcf0;
+  --color-soot: #040f1b;
+  --color-char: #071c2c;
+  --color-wood: #0a2537;
+  --color-bark: #1f4a60;
+  --color-ember: #ff6a3d;
+  --color-flame: #ff9a72;
+  --color-hot: #eaf6f2;
+  --color-ash: #9dbdc1;
+  --color-ash-light: #e6f4f1;
+  --color-plaque: #eaf6f2;
+  --color-plaque-ink: #052733;
+  --color-cold: #c8e66a;
 
-  --font-display: "Pixelify Sans", "Courier New", monospace;
-  --font-body: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Arial Narrow", sans-serif;
+  --font-body: "Hanken Grotesk", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-pixel: "Silkscreen", "Courier New", monospace;
-  --font-hand: "Silkscreen", monospace;
-  --font-sign: "Pixelify Sans", monospace;
+  --font-sign: "Bricolage Grotesque Variable", sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
-  /* escrow fill 0..1, written by the page; warms the lava glow */
+  /* escrow fill 0..1, written by the page */
   --hearth: 0;
+  /* 0 at the surface, 1 on the floor; written by the depth gauge */
+  --depth: 0;
   color-scheme: dark;
 }
 
@@ -81,11 +90,11 @@
 
   ::selection {
     background: var(--color-ring);
-    color: var(--color-night);
+    color: var(--color-pen);
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-ring-hot);
+    outline: 2px solid var(--color-ring);
     outline-offset: 3px;
   }
 
@@ -95,15 +104,16 @@
 }
 
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--color-night);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-panel-line);
-  border: 3px solid var(--color-night);
+  border: 2px solid var(--color-night);
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-ring);
@@ -115,201 +125,327 @@
 
 /* Everything below is a component layer, so Tailwind utilities on an element still win. */
 @layer components {
-/* ───────── Voices ───────── */
-.display {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: 0;
-}
-.pxl,
-.label {
-  font-family: var(--font-pixel);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.hand {
-  font-family: var(--font-pixel);
-  line-height: 1.1;
-}
-/* pixel letters cast a hard one-step shadow, like a game title */
-.px-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 0.9;
-  text-shadow: 0.06em 0.06em 0 #0b0806;
+  /* ───────── Voices ───────── */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 78%;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 75%;
+    line-height: 0.82;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+  .label {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .reading {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* ───────── Survey sheet: the drawer ───────── */
+  .paper {
+    position: relative;
+    background-color: var(--color-paper);
+    color: var(--color-pen);
+    box-shadow: -30px 0 60px -30px rgba(2, 10, 18, 0.7);
+  }
+
+  /* ───────── Hulls: panels in the deep ───────── */
+  .hull {
+    position: relative;
+    border-radius: 20px;
+    background: color-mix(in oklab, var(--color-panel) 78%, transparent);
+    border: 1px solid var(--color-panel-line);
+  }
+
+  /* ───────── Buttons: pills ───────── */
+  .btn-ring,
+  .btn-ghost,
+  .btn-ink,
+  .btn-pen,
+  .btn-coal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    transition:
+      transform 0.3s var(--ease-out-expo),
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.3s var(--ease-out-expo);
+  }
+  .btn-ring:active,
+  .btn-ghost:active,
+  .btn-ink:active,
+  .btn-pen:active,
+  .btn-coal:active {
+    transform: translateY(1px) scale(0.98);
+  }
+  /* the buoy: the primary action */
+  .btn-ring,
+  .btn-coal {
+    background: var(--color-ring);
+    color: var(--color-pen);
+    box-shadow: 0 10px 24px -12px rgba(201, 68, 28, 0.9), inset 0 -2px 0 rgba(5, 39, 51, 0.18);
+  }
+  .btn-ring:hover,
+  .btn-coal:hover {
+    background: var(--color-ring-hot);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px -14px rgba(201, 68, 28, 0.95), inset 0 -2px 0 rgba(5, 39, 51, 0.18);
+  }
+  /* outlined, for deep water */
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-star);
+    border: 1.5px solid color-mix(in oklab, var(--color-star) 35%, transparent);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-ring);
+    color: var(--color-ring-hot);
+  }
+  /* outlined, for light water */
+  .btn-ink {
+    background: transparent;
+    color: var(--color-pen);
+    border: 1.5px solid color-mix(in oklab, var(--color-pen) 45%, transparent);
+  }
+  .btn-ink:hover {
+    background: var(--color-pen);
+    color: var(--color-paper);
+    border-color: var(--color-pen);
+  }
+  /* on the survey sheet */
+  .btn-pen {
+    color: var(--color-pen);
+    background: transparent;
+    border: 1.5px solid color-mix(in oklab, var(--color-pen) 55%, transparent);
+  }
+  .btn-pen:hover {
+    background: var(--color-pen);
+    color: var(--color-paper);
+  }
+
+  /* ───────── Legacy operator-panel helpers (/memex) ───────── */
+  .plaque {
+    background: var(--color-paper);
+    color: var(--color-pen);
+  }
+  .sign-lettering {
+    font-family: var(--font-display);
+    font-weight: 800;
+  }
 }
 
-/* ───────── The world ───────── */
-.sky {
-  background:
-    radial-gradient(70% 40% at 50% 100%, color-mix(in oklab, var(--color-ring) calc(6% + var(--hearth) * 10%), transparent) 0%, transparent 70%),
-    var(--color-night);
+/* ───────── Motion (all of it gated) ───────── */
+@media (prefers-reduced-motion: no-preference) {
+  .reink {
+    animation: reink 0.7s var(--ease-out-expo) both;
+  }
+  .wave-under {
+    animation: wave-under 5s ease-in-out infinite alternate;
+  }
+  .sonar-sweep {
+    animation: sonar-sweep 4s linear infinite;
+  }
+  .sonar-sweep[data-fast='true'] {
+    animation-duration: 1.4s;
+  }
+  .ping {
+    animation: ping 2.6s var(--ease-out-expo) infinite;
+  }
+  .bob {
+    animation: bob 3.2s ease-in-out infinite alternate;
+  }
+  .porthole-water {
+    animation: slosh 4s ease-in-out infinite alternate;
+  }
 }
-/* cave stone, one 32px tile of blocks */
-.px-stone {
-  background-color: #1d1714;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' shape-rendering='crispEdges'%3E%3Crect width='32' height='32' fill='%231d1714'/%3E%3Crect x='0' y='0' width='15' height='15' fill='%23211a16'/%3E%3Crect x='16' y='16' width='16' height='16' fill='%23211a16'/%3E%3Crect x='4' y='4' width='4' height='2' fill='%23282019'/%3E%3Crect x='22' y='6' width='6' height='2' fill='%23181310'/%3E%3Crect x='8' y='22' width='6' height='2' fill='%23181310'/%3E%3Crect x='24' y='24' width='4' height='2' fill='%23282019'/%3E%3Crect x='0' y='15' width='32' height='1' fill='%23120e0c'/%3E%3Crect x='15' y='0' width='1' height='15' fill='%23120e0c'/%3E%3Crect x='0' y='31' width='32' height='1' fill='%23120e0c'/%3E%3Crect x='7' y='16' width='1' height='15' fill='%23120e0c'/%3E%3C/svg%3E");
-  background-size: 64px 64px;
-  image-rendering: pixelated;
+@keyframes reink {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(0.2em);
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
 }
-.px-dirt {
-  background-color: var(--color-dirt);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%236b4a2f'/%3E%3Crect x='2' y='3' width='2' height='2' fill='%23573a23'/%3E%3Crect x='10' y='1' width='2' height='2' fill='%237d5838'/%3E%3Crect x='6' y='9' width='2' height='2' fill='%23573a23'/%3E%3Crect x='12' y='11' width='2' height='2' fill='%237d5838'/%3E%3Crect x='1' y='13' width='2' height='2' fill='%237d5838'/%3E%3C/svg%3E");
-  background-size: 48px 48px;
-  image-rendering: pixelated;
+@keyframes wave-under {
+  0% {
+    transform: translateX(-0.5%) skewX(-1.5deg) scaleY(1.02);
+  }
+  100% {
+    transform: translateX(0.5%) skewX(1.5deg) scaleY(0.99);
+  }
 }
-.px-grass {
-  background:
-    linear-gradient(#78c24a 0 4px, var(--color-grass) 4px 12px, transparent 12px),
-    repeating-linear-gradient(90deg, var(--color-grass) 0 12px, transparent 12px 18px, var(--color-grass) 18px 24px, transparent 24px 36px) 0 12px / 100% 6px no-repeat;
+@keyframes sonar-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ping {
+  0% {
+    transform: scale(0.2);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@keyframes bob {
+  from {
+    transform: translateY(-3px) rotate(-2deg);
+  }
+  to {
+    transform: translateY(3px) rotate(2deg);
+  }
+}
+@keyframes slosh {
+  from {
+    transform: translateX(-6%);
+  }
+  to {
+    transform: translateX(6%);
+  }
 }
 
-/* ───────── Panels: square, bevelled, with a hard outline ───────── */
-.px-panel {
-  position: relative;
-  background: var(--color-panel);
-  color: var(--color-star);
-  box-shadow:
-    0 0 0 4px #0b0806,
-    inset 4px 4px 0 rgba(255, 255, 255, 0.07),
-    inset -4px -4px 0 rgba(0, 0, 0, 0.32),
-    8px 8px 0 4px rgba(0, 0, 0, 0.45);
-}
-.px-frame {
-  position: relative;
-  background: #0b0806;
-  padding: 6px;
-  box-shadow: 0 0 0 4px #3e332b, 10px 10px 0 4px rgba(0, 0, 0, 0.45);
-  image-rendering: pixelated;
-}
-
-/* paper: the full-log drawer and lore signs */
-.paper {
-  position: relative;
-  background-color: var(--color-paper);
+/* ───────── Chrome that changes with depth: header, rail, reading ───────── */
+.site-header {
   color: var(--color-pen);
-  box-shadow: 0 0 0 4px #0b0806, inset -4px -4px 0 rgba(0, 0, 0, 0.12), 8px 8px 0 4px rgba(0, 0, 0, 0.45);
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease,
+    box-shadow 0.4s ease;
 }
-.sprockets {
+:root[data-zone='surface'] .site-header {
+  background-color: color-mix(in oklab, var(--color-air) 82%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px -22px rgba(5, 39, 51, 0.6);
 }
-
-/* ───────── Buttons: pixel keys that press down ───────── */
-.btn-ring,
-.btn-ghost,
-.btn-pen,
-.btn-coal {
+:root[data-zone='deep'] .site-header {
+  color: var(--color-star);
+  background-color: color-mix(in oklab, var(--color-night) 84%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.9);
+}
+.nav-link {
+  position: relative;
+  color: inherit;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-ring);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease-out-expo);
+}
+.nav-link:hover {
+  opacity: 1;
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+.btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  font-family: var(--font-pixel);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-radius: 0;
-  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2), background-color 0.12s steps(2), color 0.12s steps(2);
+  border-radius: 999px;
+  color: inherit;
+  border: 1.5px solid color-mix(in oklab, currentColor 35%, transparent);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
-.btn-ring,
-.btn-coal {
-  background: var(--color-ring);
-  color: #1a1412;
-  box-shadow: 0 0 0 3px #0b0806, inset 0 -5px 0 #c2370f, inset 0 3px 0 rgba(255, 255, 255, 0.45), 0 6px 0 3px #0b0806;
+.btn-icon:hover {
+  border-color: var(--color-ring);
+  color: var(--color-ring);
 }
-.btn-ring:hover,
-.btn-coal:hover {
-  background: var(--color-ring-hot);
+.depth-rail,
+.depth-reading {
+  color: var(--color-pen);
+  transition: color 0.4s ease;
 }
-.btn-ring:active,
-.btn-coal:active {
-  transform: translateY(5px);
-  box-shadow: 0 0 0 3px #0b0806, inset 0 -2px 0 #c2370f, inset 0 3px 0 rgba(255, 255, 255, 0.45), 0 1px 0 3px #0b0806;
-}
-.btn-ghost {
-  background: #3a302a;
+:root[data-zone='deep'] .depth-rail,
+:root[data-zone='deep'] .depth-reading {
   color: var(--color-star);
-  box-shadow: 0 0 0 3px #0b0806, inset 0 -4px 0 #231c17, inset 0 3px 0 rgba(255, 255, 255, 0.12), 0 5px 0 3px #0b0806;
-}
-.btn-ghost:hover {
-  background: #4b3f37;
-  color: var(--color-ring-hot);
-}
-.btn-ghost:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 3px #0b0806, inset 0 -2px 0 #231c17, 0 1px 0 3px #0b0806;
-}
-.btn-pen {
-  color: var(--color-pen);
-  background: var(--color-paper);
-  box-shadow: 0 0 0 3px var(--color-pen);
-}
-.btn-pen:hover {
-  background: var(--color-pen);
-  color: var(--color-paper);
 }
 
-/* ───────── Pixel motion (all of it stepped) ───────── */
+/* ───────── Otto ───────── */
+.otto .otto-lid {
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+.otto .otto-arm {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
 @media (prefers-reduced-motion: no-preference) {
-  .px-flame {
-    transform-box: view-box;
-    animation: px-flick 0.6s steps(3) infinite alternate;
+  .otto .otto-lid {
+    animation: otto-blink 5.2s steps(1, end) infinite;
   }
-  .px-bubble {
-    animation: px-bubble 2.4s steps(8) infinite;
-  }
-  .px-lava-crust {
-    animation: px-crust 3.2s steps(8) infinite;
-  }
-  .px-hop {
-    animation: px-hop 0.5s steps(2) infinite alternate;
-  }
-  .px-bob {
-    animation: px-hop 1.4s steps(2) infinite alternate;
-  }
-  .px-sweat {
-    animation: px-sweat 1.6s steps(6) infinite;
-  }
-  .reink {
-    animation: reink 0.35s steps(4) both;
+  .otto .otto-arm.otto-toss {
+    animation: otto-toss 0.65s var(--ease-out-expo) both;
   }
 }
-@keyframes px-flick {
-  0% { transform: scaleY(0.75); }
-  50% { transform: scaleY(1.1); }
-  100% { transform: scaleY(0.9); }
+@keyframes otto-blink {
+  0%,
+  94% {
+    transform: scaleY(0);
+  }
+  95%,
+  97% {
+    transform: scaleY(1);
+  }
+  98%,
+  100% {
+    transform: scaleY(0);
+  }
 }
-@keyframes px-bubble {
-  0% { transform: translateY(0); opacity: 0; }
-  20% { opacity: 1; }
-  80% { transform: translateY(-6px); opacity: 1; }
-  100% { transform: translateY(-8px); opacity: 0; }
+@keyframes otto-toss {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(-70deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
-@keyframes px-crust {
-  from { transform: translateX(0); }
-  to { transform: translateX(8px); }
+.depth-reading {
+  background-color: color-mix(in oklab, var(--color-air) 80%, transparent);
+  backdrop-filter: blur(8px);
 }
-@keyframes px-hop {
-  from { transform: translateY(0); }
-  to { transform: translateY(-4px); }
-}
-@keyframes px-sweat {
-  0% { transform: translateY(0); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateY(8px); opacity: 0; }
-}
-@keyframes reink {
-  0% { opacity: 0; transform: translateY(0.2em); }
-  100% { opacity: 1; transform: none; }
-}
-
-/* ───────── Legacy operator-panel helpers (/memex) ───────── */
-.plaque {
-  background: var(--color-paper);
-  color: var(--color-pen);
-}
-.sign-lettering {
-  font-family: var(--font-display);
-  font-weight: 700;
-}
+:root[data-zone='deep'] .depth-reading {
+  background-color: color-mix(in oklab, var(--color-night) 80%, transparent);
 }

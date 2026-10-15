@@ -16,7 +16,7 @@ import {
   RotateCcw,
   Trash2
 } from 'lucide-react';
-import { VoidMark } from './void/VoidMark';
+import { TrenchMark } from './trench/TrenchMark';
 
 interface MemexAdminProps {
   onBack?: () => void;
@@ -307,13 +307,13 @@ export function MemexAdmin({ onBack }: MemexAdminProps) {
             className="flex items-center gap-2 text-ash-light hover:text-hot transition-colors cursor-pointer text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to the observatory</span>
+            <span className="hidden sm:inline">Back to the surface</span>
           </button>
           <div className="h-4 w-[1px] bg-bark" />
           <div className="flex items-center gap-2">
-            <VoidMark className="h-7 w-7" />
+            <TrenchMark className="h-7 w-7 text-hot" />
             <span className="font-sign font-black uppercase text-hot text-2xl leading-none">
-              Void
+              The Trench
             </span>
             <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-char text-flame border border-bark font-semibold">
               Keeper
@@ -333,13 +333,13 @@ export function MemexAdmin({ onBack }: MemexAdminProps) {
             <div className="mb-6 relative z-10">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-soot border border-bark text-xs font-mono text-ash-light mb-3">
                 <span className="w-2 h-2 rounded-full bg-ember" />
-                The Watcher's console
+                Otto's console
               </div>
               <h1 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-[0.04em] text-hot m-0">
-                Feed the Void
+                Rig the dive
               </h1>
               <p className="text-xs sm:text-sm text-ash-light mt-1.5 leading-relaxed">
-                Set the Watcher's key and the token it feeds to the hole. Every orbit runs from what you save here.
+                Set Otto's key and the token Otto sinks. Every dive runs from what you save here.
               </p>
             </div>
 
@@ -453,7 +453,7 @@ export function MemexAdmin({ onBack }: MemexAdminProps) {
                   </p>
                 ) : (
                   <p className={hintClass}>
-                    The token the Watcher buys back and drops into 0x…dEaD.
+                    The token Otto buys back and sinks to 0x…dEaD.
                   </p>
                 )}
               </div>
