@@ -69,7 +69,10 @@ npm run bot
 ## Security
 
 - The frontend web application is strictly **read-only / public tracker**.
-- The `CREATOR_PRIVATE_KEY` variable is never exposed to the client-side bundle.
+- The `CREATOR_PRIVATE_KEY` variable is never exposed to the client-side bundle, and no API ever sends it back to a browser.
+- **The `/memex` admin panel needs `ADMIN_SECRET`** (min 16 characters) in `.env`. Every change to the token, treasury or operator key must carry it in the `x-admin-secret` header; without it the admin API stays closed. Ten wrong secrets from one address lock that address out for 15 minutes.
+- **The bot API listens on `127.0.0.1`** (`BOT_HOST`). Visitors reach it only through the web server's `/api` proxy.
+- **`npm run dev` listens on `127.0.0.1` only** (`WEB_HOST`), because it can write `.env`. Use `npm run build` + `npm run preview` for a public server.
 - Tokens sent to `0x0...dEaD` are provably unrecoverable.
 
 ---

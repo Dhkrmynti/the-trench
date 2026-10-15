@@ -10,6 +10,7 @@
  */
 
 import http from "http";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { ethers } from "ethers";
@@ -549,6 +550,60 @@ executeCycle().catch(console.error);
 // -------------------------------------------------------------
 // NATIVE HTTP API SERVER (Untuk komunikasi langsung dengan /memex)
 // -------------------------------------------------------------
+
+// Admin API security. Changing the token, treasury or operator key needs ADMIN_SECRET
+// (sent as the x-admin-secret header). Without a secret of at least 16 characters the
+// admin endpoints stay closed. The API listens on 127.0.0.1 unless BOT_HOST says otherwise,
+// so only the web server on the same machine (its /api proxy) can reach it.
+const ADMIN_SECRET = (process.env.ADMIN_SECRET || "").trim();
+const ADMIN_ENABLED = ADMIN_SECRET.length >= 16;
+const BOT_HOST = process.env.BOT_HOST || "127.0.0.1";
+const MAX_BODY_BYTES = 16 * 1024;
+const FAIL_WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILS = 10;
+const failedAttempts = new Map<string, { count: number; first: number }>();
+
+if (!ADMIN_ENABLED) {
+  addLog("warn", "ADMIN_SECRET is not set (min 16 characters): the /memex admin API is closed. Configure the bot through .env instead.");
+}
+
+function clientIp(req: http.IncomingMessage) {
+  // behind the web server's /api proxy every request comes from 127.0.0.1; the proxy appends
+  // the real client to x-forwarded-for, so only its last entry can be trusted
+  const fwd = req.headers["x-forwarded-for"];
+  const list = (Array.isArray(fwd) ? fwd.join(",") : fwd || "").split(",").map((v) => v.trim()).filter(Boolean);
+  return list[list.length - 1] || req.socket.remoteAddress || "unknown";
+}
+
+function secretMatches(given: string) {
+  // hash both sides so the comparison is constant-time whatever the lengths
+  const a = crypto.createHash("sha256").update(given).digest();
+  const b = crypto.createHash("sha256").update(ADMIN_SECRET).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
+/** Returns an error status (401/403/429) and message, or null when the caller is the admin. */
+function checkAdmin(req: http.IncomingMessage): { status: number; error: string } | null {
+  if (!ADMIN_ENABLED) return { status: 403, error: "Admin API is closed: set ADMIN_SECRET (min 16 characters) in the bot's .env" };
+  const ip = clientIp(req);
+  const now = Date.now();
+  const rec = failedAttempts.get(ip);
+  if (rec && now - rec.first < FAIL_WINDOW_MS && rec.count >= MAX_FAILS) {
+    return { status: 429, error: "Too many wrong secrets. Try again in 15 minutes." };
+  }
+  const header = req.headers["x-admin-secret"];
+  const given = (Array.isArray(header) ? header[0] : header) || "";
+  if (given && secretMatches(given)) {
+    failedAttempts.delete(ip);
+    return null;
+  }
+  if (!rec || now - rec.first >= FAIL_WINDOW_MS) failedAttempts.set(ip, { count: 1, first: now });
+  else rec.count += 1;
+  addLog("warn", `[SECURITY] Rejected admin request from ${ip} (wrong or missing secret)`);
+  return { status: 401, error: "Wrong or missing admin secret" };
+}
+
+const isHexKey = (k: string) => /^(0x)?[0-9a-fA-F]{64}$/.test(k);
 function sendJSON(res: http.ServerResponse, status: number, data: any) {
   res.writeHead(status, {
     "Content-Type": "application/json",
@@ -598,14 +653,37 @@ const server = http.createServer(async (req, res) => {
 
   // Endpoint 2: POST /api/config atau POST /api/admin/save
   if (req.method === "POST" && (url === "/api/config" || url === "/api/admin/save" || url === "/api/config/")) {
+    const denied = checkAdmin(req);
+    if (denied) {
+      req.resume();
+      // a short pause makes guessing the secret slow
+      return setTimeout(() => sendJSON(res, denied.status, { success: false, error: denied.error }), denied.status === 401 ? 600 : 0);
+    }
     let body = "";
+    let tooBig = false;
     req.on("data", (chunk) => {
+      if (tooBig) return;
       body += chunk;
+      if (body.length > MAX_BODY_BYTES) {
+        tooBig = true;
+        sendJSON(res, 413, { success: false, error: "Request body too large" });
+        req.destroy();
+      }
     });
     req.on("end", () => {
+      if (tooBig) return;
       try {
         const data = JSON.parse(body || "{}");
         let updated = false;
+
+        // validate everything before changing anything
+        const str = (v: unknown) => (typeof v === "string" ? v.trim() : v === undefined ? undefined : null);
+        const token = str(data.tokenAddress);
+        const treasury = str(data.treasuryAddress);
+        const key = str(data.privateKey);
+        if (token === null || (token && !isValidAddress(token))) return sendJSON(res, 400, { success: false, error: "tokenAddress must be a valid 0x address or empty" });
+        if (treasury === null || (treasury && !isValidAddress(treasury))) return sendJSON(res, 400, { success: false, error: "treasuryAddress must be a valid 0x address or empty" });
+        if (key === null || (key && !isHexKey(key))) return sendJSON(res, 400, { success: false, error: "privateKey must be 64 hex characters or empty" });
 
         if (data.tokenAddress !== undefined) {
           const cleanToken = data.tokenAddress.trim();
@@ -661,7 +739,7 @@ server.on("error", (err: any) => {
   if (err.code === "EADDRINUSE") {
     console.warn(`[API] Port ${PORT} sedang dipakai. Mencoba port ${PORT + 1}...`);
     try {
-      server.listen(PORT + 1, "0.0.0.0");
+      server.listen(PORT + 1, BOT_HOST);
     } catch (e) {
       console.warn("API server dialihkan, proses bot tetap berjalan.");
     }
@@ -670,11 +748,12 @@ server.on("error", (err: any) => {
   }
 });
 
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, BOT_HOST, () => {
   console.log("==========================================================");
   console.log(`BLAZE AUTONOMOUS BURN ENGINE & API SERVER ACTIVE`);
   console.log(`   Server Port      : ${PORT}`);
-  console.log(`   Admin API Ready  : http://localhost:${PORT}/api/status`);
+  console.log(`   Listening on     : http://${BOT_HOST}:${PORT}/api/status`);
+  console.log(`   Admin API        : ${ADMIN_ENABLED ? "enabled (x-admin-secret required)" : "CLOSED (set ADMIN_SECRET to enable)"}`);
   console.log(`   Operator Wallet  : ${botState.walletAddress || "Not ready"}`);
   console.log(`   Initial Status   : ${isValidAddress(currentConfig.tokenAddress) ? "ACTIVE" : "STANDBY (Awaiting CA from /memex)"}`);
   console.log("==========================================================");

@@ -2,9 +2,9 @@
   "name": "pons-flywheel-bot",
   "version": "1.0.0",
   "description": "Autonomous Fee-Claim, Buyback and Burn Bot for Pons v2",
-  "main": "pons-flywheel-bot.ts",
+  "main": "pons-burn-bot.ts",
   "scripts": {
-    "start": "ts-node pons-flywheel-bot.ts"
+    "start": "ts-node pons-burn-bot.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
