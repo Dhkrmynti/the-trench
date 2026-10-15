@@ -139,11 +139,11 @@ export function DepthGauge() {
       </div>
 
       {/* the reading */}
-      <p className="depth-reading pointer-events-none fixed bottom-4 right-4 z-30 m-0 rounded-2xl px-3 py-1.5 text-right sm:bottom-5 sm:right-5 xl:right-8" aria-live="off">
-        <span ref={readRef} className="reading block text-[0.95rem] font-semibold">
+      <p className="depth-reading pointer-events-none fixed bottom-3 right-3 z-30 m-0 rounded-full px-2.5 py-1 text-right sm:bottom-5 sm:right-5 sm:rounded-2xl sm:px-3 sm:py-1.5 xl:right-8" aria-live="off">
+        <span ref={readRef} className="reading block text-[0.78rem] font-semibold sm:text-[0.95rem]">
           0 m
         </span>
-        <span ref={zoneRef} className="label block text-[0.58rem] opacity-80">
+        <span ref={zoneRef} className="label hidden text-[0.58rem] opacity-80 sm:block">
           Sunlight zone
         </span>
       </p>

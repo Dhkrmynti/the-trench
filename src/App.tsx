@@ -78,6 +78,30 @@ export function App() {
     document.fonts?.ready.then(() => ScrollTrigger.refresh());
   }, []);
 
+  // The ledger and logs arrive after the first layout and make the page taller; re-measure
+  // the pins and the depth gauge whenever the page height really changes
+  useEffect(() => {
+    const page = pageRef.current;
+    if (isMemexRoute || !page) return;
+    let last = page.offsetHeight;
+    let timer = 0;
+    const ro = new ResizeObserver(() => {
+      const h = page.offsetHeight;
+      if (Math.abs(h - last) < 2) return;
+      last = h;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        ScrollTrigger.refresh();
+        last = page.offsetHeight;
+      }, 250);
+    });
+    ro.observe(page);
+    return () => {
+      ro.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [isMemexRoute]);
+
   // While the bot is really running, Otto keeps dropping coins
   useEffect(() => {
     if (!state.isWheelSpinning) return;
@@ -145,14 +169,14 @@ export function App() {
 
   const copyCA = () => {
     if (!config.tokenAddress) return;
-    navigator.clipboard.writeText(config.tokenAddress);
+    navigator.clipboard?.writeText(config.tokenAddress).catch(() => {});
     setCopiedCA(true);
     sounds.playClaimSound();
     setTimeout(() => setCopiedCA(false), 2500);
   };
 
   const copyDead = () => {
-    navigator.clipboard.writeText(config.deadAddress || PONS_V2_CONFIG.contracts.deadAddress);
+    navigator.clipboard?.writeText(config.deadAddress || PONS_V2_CONFIG.contracts.deadAddress).catch(() => {});
     setCopiedDead(true);
     sounds.playBurnSound();
     setTimeout(() => setCopiedDead(false), 2000);

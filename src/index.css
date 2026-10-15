@@ -449,3 +449,12 @@
 :root[data-zone='deep'] .depth-reading {
   background-color: color-mix(in oklab, var(--color-night) 80%, transparent);
 }
+/* at the very top the reading says nothing yet; it surfaces once you start the dive */
+.depth-reading {
+  transition:
+    opacity 0.4s ease,
+    color 0.4s ease;
+}
+:root[data-zone='top'] .depth-reading {
+  opacity: 0;
+}
